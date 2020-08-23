@@ -1,0 +1,13 @@
+Should do:
+. Chapter on Adding a constructor to do something with globals.
+. Chapter on DSLs
+
+argument(type, name, [optional, mandatory]) {
+  "-a", "Help text", [default], [arg_assert(exp)]
+};
+
+Would be nice:
+. Further Readings
+. More background info at beginnings of chapters
+. Main text -> Larger font. Code -> smaller font.
+

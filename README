@@ -1,0 +1,200 @@
+This is a simple tutorial about how to use the CIL compiler frontend to do
+static and dynamic program analysis.
+
+Author: Zach Anderson (zanderso@acm.org)
+
+1. Intro
+2. Building and Installing
+3. Files
+4. Bugs and Feedback
+5. Citation
+
+1. Intro:
+------
+
+CIL is a frontend for C compilers. It takes C code as input, which can then be
+analyzed or instrumented, and then spits out C code, which can be passed to
+your favorite C compiler. This process can be automated such that your CIL-based
+front-end can be made to look like gcc, or whatever, and used directly in your
+build process. This tutorial creates such a frontend, and demonstrates, in
+tutorial form, some nifty things that might be done with it.
+
+2a. Building and Installing (Ubuntu):
+------------------------
+
+There are a few dependencies:
+. Everything you need to build C programs
+. OCaml
+. cmake
+  - Ubuntu packages: cmake cmake-data
+. CIL
+  - Build and install from http://cil.sf.net
+. Please let me know if I've forgotten anything
+
+Dependencies only for the theorem proving example (tut11.ml):
+. why3
+. theorem provers (e.g. alt-ergo)
+. pass -DBUILD_TUT11=true to cmake to include this example
+
+Dependencies only for the automated test generation example (tut15.ml):
+. Yices SMT solver (http://yices.csl.sri.com/)
+. ocamlyices (https://github.com/polazarus/ocamlyices)
+. pass -DBUILD_TUT15 to cmake to include this example
+
+Then, to obtain and build:
+
+$ hg clone https://bitbucket.org/zanderso/cil-template
+$ mkdir build
+$ cd build
+$ cmake [-DBUILD_TUT11=true] [-DBUILD_TUT15=true] ..
+$ make
+$ sudo make install
+
+Then, enter the test directory and build a program like so:
+
+$ ciltutcc -o test1 test1.c
+$ ./test1
+
+The generated ciltutcc takes all of the usual gcc arguments, in addition to the
+following:
+
+--trace       - shows all of the commands run
+--save-temps  - saves all of the intermediate files
+--enable-tutN - enables the pass defined by tutN.ml
+
+And others that you can define in src/ciltutoptions.ml
+
+If you do:
+
+$ ciltutcc --save-temps -o test1 test1.c
+
+A file called test1.cil.c will be created showing the source file created by
+the frontend before it is passed on to gcc.
+
+  [Ocamlyices installation]
+
+$ git clone git://github.com/polazarus/ocamlyices.git
+$ cd ocamlyices
+(Download yices for your platform from http://yices.csl.sri.com/download.shtml
+ into the ocamlyices directory. If the version statically linked with gmp
+ doesn't work, then try the dynamically linked version.)
+$ sudo ./install-yices.sh [the tar.gz file you dl'd]
+$ autoconf [if needed]
+$ ./configure
+$ make
+$ sudo make install
+
+  [Alt-Ergo installation]
+
+$ wget http://alt-ergo.lri.fr/http/alt-ergo-0.94.tar.gz
+$ tar zxf alt-ergo-0.94.tar.gz
+$ cd alt-ergo-0.94
+$ autoconf [if needed]
+$ ./configure
+$ make
+$ sudo make install
+
+  [Why3 Installation]
+
+$ git clone https://gforge.inria.fr/git/why3/why3.git
+$ cd why3
+$ autoconf [if needed]
+$ ./configure
+$ make
+$ make byte
+$ sudo make install
+$ sudo make install-lib
+$ why3config
+
+2b. Building and Installing (Mac OS X)
+-------------
+
+This project should build and install on 10.8 using the MacPorts OCaml install.
+I have not yet tried to get tutorials 11 and 15 running on it yet, though.
+
+(It appears that there is some problem with linking the calls from C -> OCaml
+in tut15.c, but Why3, Alt-Ergo, and Ocamlyices *should* build without
+problems---I just haven't tried it yet.)
+
+Anyway, here's what you'll need to do:
+1. install XCode and be sure to install the "Unix" or "Command line" tools.
+2. install MacPorts from http://www.macports.org
+3. Do:
+
+$ sudo port install ocaml ocaml-findlib lablgl lablgtk lablgtk2 mercurial cmake
+                    ocaml-ocamlgraph
+
+4. Install CIL:
+
+$ git clone git://cil.git.sourceforge.net/gitroot/cil/cil
+$ cd cil
+$ ./configure; make; sudo make install
+
+5. Build cil-tutorial
+
+As above
+
+
+6. Let me know if I've missed any steps =)
+
+3. Files:
+---------
+
+CMakeLists.txt - Add additional filenames to CILTUT_SRC on line 48 to add
+additional OCaml modules. Other parts of the Makefile can probably remain
+unchanged unless you need to do something weird.
+
+src/main.ml - Reads in a source file, calls into the various tutorial modules,
+spits out the result. Hopefully it is obvious where to add code to call into
+any new modules that you write.
+
+src/ciltutoptions.ml - Defines command line options.
+
+src/tut*.ml - Tutorial modules explaining how to use CIL.
+
+ciltut-include/ciltut.h - Various function and macro definitions needed for
+building ciltut-lib and the things in test/.
+
+ciltut-lib/ - The runtime library. The files in src/tut*.c
+go along with the corresponding .ml files. ciltut_libc.c has utility functions.
+To add new code to the runtime, add file names to the CMakeLists.txt file under
+the src/ directory in the obvious place.
+
+lib/Ciltut.pm - A perl script that sits in front of the actual compiler
+frontend. It is used for massaging the command line a bit. For example, it makes
+sure that the final result links against the code in ciltut-lib/.
+
+test/tut*.c - Test programs for the various tutorial modules.
+
+LICENSE - All the code in this project is licensed under a standard 3-clause
+BSD license.
+
+4. Bugs, and Feedback:
+--------------
+
+Please use the issue tracker on bitbucket to report bugs, make suggestions,
+give feedback, etc..
+
+5. Citation:
+------------
+
+If you use cil-template as a starting point for your project, please make the
+following citation:
+
+Zachary Anderson. A CIL Tutorial: Using CIL for Language Extensions and Program
+  Analysis, <the date given on the document>. <http://the.download.url>.
+
+At the time this README file was written, this evaluates to:
+
+Zachary Anderson. A CIL Tutorial: Using CIL for Language Extensions and Program
+  Analysis, January 2013. http://www.inf.ethz.ch/~azachary.
+
+Or in bibtex format:
+
+@misc{ciltut,
+  title = {A {CIL} Tutorial: Using {CIL} for Language Extensions and Program Analysis},
+  author = {Zachary Anderson},
+  month = Jan,
+  year = 2013,
+  note = {\url{http://www.inf.ethz.ch/~azachary/}},
+}

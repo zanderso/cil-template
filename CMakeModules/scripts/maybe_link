@@ -1,0 +1,8 @@
+#!/bin/bash
+
+abs_src=$1
+src=$2
+dst=$3
+
+[[ -f $abs_src ]] && ln -sf $src $dst
+true
